@@ -9,7 +9,9 @@ Contains all configuration constants and API credentials
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+# Load .env file from the same directory as this config file
+dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+load_dotenv(dotenv_path)
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 AI_API_KEY = os.getenv("AI_API_KEY")
