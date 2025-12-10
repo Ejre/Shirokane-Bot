@@ -1,0 +1,74 @@
+[
+    {
+        "id": 1,
+        "character_name": "Yor Forger",
+        "anime_name": "Spy x Family",
+        "image_file": "waifu_1.png"
+    },
+    {
+        "id": 2,
+        "character_name": "Marin Kitagawa",
+        "anime_name": "My Dress-Up Darling",
+        "image_file": "waifu_2.png"
+    },
+    {
+        "id": 3,
+        "character_name": "Ruri Ichigyou",
+        "anime_name": "Hello World",
+        "image_file": "waifu_3.png"
+    },
+    {
+        "id": 4,
+        "character_name": "Keqing",
+        "anime_name": "Genshin Impact",
+        "image_file": "waifu_4.png"
+    },
+    {
+        "id": 5,
+        "character_name": "Navia",
+        "anime_name": "Genshin Impact",
+        "image_file": "waifu_5.png"
+    },
+    {
+        "id": 6,
+        "character_name": "Sparkle",
+        "anime_name": "Honkai: Star Rail",
+        "image_file": "waifu_6.png"
+    },
+    {
+        "id": 7,
+        "character_name": "Kafka",
+        "anime_name": "Honkai: Star Rail",
+        "image_file": "waifu_7.png"
+    },
+    {
+        "id": 8,
+        "character_name": "Sayu Ogiwara",
+        "anime_name": "Higehiro: After Being Rejected, I Shaved and Took in a High School Runaway",
+        "image_file": "waifu_8.png"
+    },
+    {
+        "id": 9,
+        "character_name": "Gotou Airi",
+        "anime_name": "Higehiro: After Being Rejected, I Shaved and Took in a High School Runaway",
+        "image_file": "waifu_9.png"
+    },
+    {
+        "id": 10,
+        "character_name": "Kiana Kaslana",
+        "anime_name": "Honkai Impact 3rd",
+        "image_file": "waifu_10.png"
+    },
+    {
+        "id": 11,
+        "character_name": "Saber Alter",
+        "anime_name": "Fate Series",
+        "image_file": "waifu_11.png"
+    },
+    {
+        "id": 12,
+        "character_name": "Mai Sakurajima",
+        "anime_name": "Rascal Does Not Dream of Bunny Girl Senpai",
+        "image_file": "waifu_12.png"
+    }
+]

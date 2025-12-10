@@ -1,0 +1,120 @@
+2025-12-09 13:50:47 - INFO - User hoshizaqi got waifu: Yor Forger from Spy x Family
+2025-12-09 13:51:27 - INFO - ffmpeg process 18952 successfully terminated with return code of 0.
+2025-12-09 13:52:45 - INFO - The voice handshake is being terminated for Channel ID 917623503740616720 (Guild ID 917623502239059978)
+2025-12-09 13:52:45 - INFO - ffmpeg process 29220 has not terminated. Waiting to terminate...
+2025-12-09 13:52:45 - INFO - ffmpeg process 29220 should have terminated with a return code of 1.
+2025-12-09 14:20:28 - INFO - logging in using static token
+2025-12-09 14:20:33 - INFO - Shard ID None has connected to Gateway (Session ID: 2ba2c71f19efc6859e02184be64e7c8b).
+2025-12-09 14:33:24 - INFO - Shard ID None has successfully RESUMED session 2ba2c71f19efc6859e02184be64e7c8b.
+2025-12-09 14:52:54 - INFO - Connecting to voice...
+2025-12-09 14:52:54 - INFO - Starting voice handshake... (connection attempt 1)
+2025-12-09 14:52:55 - INFO - Voice handshake complete. Endpoint found: c-sin06-86fe4efe.discord.media:443
+2025-12-09 14:52:55 - INFO - Voice connection complete.
+2025-12-09 14:52:59 - INFO - User otsukasaechii requested 100 songs from playlist
+2025-12-09 14:56:24 - INFO - ffmpeg process 28464 successfully terminated with return code of 0.
+2025-12-09 15:00:00 - INFO - Shard ID None has successfully RESUMED session 2ba2c71f19efc6859e02184be64e7c8b.
+2025-12-09 15:01:23 - INFO - ffmpeg process 14904 successfully terminated with return code of 0.
+2025-12-09 15:08:06 - INFO - ffmpeg process 24940 successfully terminated with return code of 0.
+2025-12-09 15:12:56 - INFO - ffmpeg process 10176 successfully terminated with return code of 0.
+2025-12-09 15:18:14 - INFO - ffmpeg process 15228 successfully terminated with return code of 0.
+2025-12-09 15:21:48 - INFO - ffmpeg process 15536 successfully terminated with return code of 0.
+2025-12-09 15:23:28 - INFO - User otsukasaechii got waifu: Saber Alter from Fate Series
+2025-12-09 15:26:20 - INFO - ffmpeg process 22908 successfully terminated with return code of 0.
+2025-12-09 15:30:57 - INFO - ffmpeg process 23776 successfully terminated with return code of 0.
+2025-12-09 15:35:49 - INFO - ffmpeg process 16740 successfully terminated with return code of 0.
+2025-12-09 15:40:13 - INFO - ffmpeg process 16800 successfully terminated with return code of 0.
+2025-12-09 15:45:11 - INFO - ffmpeg process 26968 successfully terminated with return code of 0.
+2025-12-09 15:49:34 - INFO - ffmpeg process 17308 successfully terminated with return code of 0.
+2025-12-09 15:52:55 - INFO - ffmpeg process 3288 successfully terminated with return code of 0.
+2025-12-09 15:56:56 - INFO - ffmpeg process 20400 successfully terminated with return code of 0.
+2025-12-09 16:00:48 - ERROR - Disconnected from voice... Reconnecting in 1.77s.
+Traceback (most recent call last):
+  File "C:\Users\ezraf\AppData\Local\Programs\Python\Python312\Lib\site-packages\discord\voice_state.py", line 601, in _poll_voice_ws
+    await self.ws.poll_event()
+  File "C:\Users\ezraf\AppData\Local\Programs\Python\Python312\Lib\site-packages\discord\gateway.py", line 1053, in poll_event
+    raise ConnectionClosed(self.ws, shard_id=None, code=self._close_code)
+discord.errors.ConnectionClosed: Shard ID None WebSocket closed with 1006
+2025-12-09 16:00:50 - INFO - The voice handshake is being terminated for Channel ID 917623503740616720 (Guild ID 917623502239059978)
+2025-12-09 16:00:50 - INFO - Connecting to voice...
+2025-12-09 16:00:50 - INFO - Starting voice handshake... (connection attempt 1)
+2025-12-09 16:00:50 - INFO - Voice handshake complete. Endpoint found: c-sin06-86fe4efe.discord.media:443
+2025-12-09 16:00:51 - INFO - Voice connection complete.
+2025-12-09 16:02:23 - INFO - ffmpeg process 21064 successfully terminated with return code of 0.
+2025-12-09 16:06:08 - INFO - ffmpeg process 23008 successfully terminated with return code of 0.
+2025-12-09 16:10:18 - INFO - ffmpeg process 18172 successfully terminated with return code of 0.
+2025-12-09 16:14:53 - INFO - ffmpeg process 12580 successfully terminated with return code of 0.
+2025-12-09 16:19:12 - INFO - ffmpeg process 10988 successfully terminated with return code of 0.
+2025-12-09 16:23:30 - INFO - ffmpeg process 11360 successfully terminated with return code of 0.
+2025-12-09 16:27:19 - INFO - ffmpeg process 12276 successfully terminated with return code of 0.
+2025-12-09 16:31:39 - INFO - ffmpeg process 22896 successfully terminated with return code of 0.
+2025-12-09 16:34:28 - INFO - User otsukasaechii got waifu: Kafka from Honkai: Star Rail
+2025-12-09 16:34:35 - INFO - The voice handshake is being terminated for Channel ID 917623503740616720 (Guild ID 917623502239059978)
+2025-12-09 16:34:35 - INFO - ffmpeg process 4596 has not terminated. Waiting to terminate...
+2025-12-09 16:34:35 - INFO - ffmpeg process 4596 should have terminated with a return code of 1.
+2025-12-09 22:17:46 - INFO - logging in using static token
+2025-12-09 22:17:48 - INFO - Shard ID None has connected to Gateway (Session ID: 39c0ab6955152697de74023fc73d62a7).
+2025-12-09 22:19:22 - INFO - Connecting to voice...
+2025-12-09 22:19:22 - INFO - Starting voice handshake... (connection attempt 1)
+2025-12-09 22:19:23 - INFO - Voice handshake complete. Endpoint found: c-sin11-b31354b1.discord.media:2053
+2025-12-09 22:19:25 - INFO - Voice connection complete.
+2025-12-09 22:19:30 - INFO - User otsukasaechii requested 100 songs from playlist
+2025-12-09 22:22:58 - INFO - ffmpeg process 28620 successfully terminated with return code of 0.
+2025-12-09 22:27:59 - INFO - ffmpeg process 22240 successfully terminated with return code of 0.
+2025-12-09 22:34:42 - INFO - ffmpeg process 14864 successfully terminated with return code of 0.
+2025-12-09 22:38:27 - ERROR - Disconnected from voice... Reconnecting in 1.67s.
+Traceback (most recent call last):
+  File "C:\Users\ezraf\AppData\Local\Programs\Python\Python312\Lib\site-packages\discord\voice_state.py", line 601, in _poll_voice_ws
+    await self.ws.poll_event()
+  File "C:\Users\ezraf\AppData\Local\Programs\Python\Python312\Lib\site-packages\discord\gateway.py", line 1053, in poll_event
+    raise ConnectionClosed(self.ws, shard_id=None, code=self._close_code)
+discord.errors.ConnectionClosed: Shard ID None WebSocket closed with 1006
+2025-12-09 22:38:29 - INFO - The voice handshake is being terminated for Channel ID 1030025659843620874 (Guild ID 917623502239059978)
+2025-12-09 22:38:29 - INFO - Connecting to voice...
+2025-12-09 22:38:29 - INFO - Starting voice handshake... (connection attempt 1)
+2025-12-09 22:38:30 - INFO - Voice handshake complete. Endpoint found: c-sin11-b31354b1.discord.media:2053
+2025-12-09 22:38:31 - INFO - Voice connection complete.
+2025-12-09 22:39:07 - INFO - User otsukasaechii got waifu: Navia from Genshin Impact
+2025-12-09 22:40:13 - INFO - User otsukasaechii requested: kiseijuu: sei no kakuritsu Opening 2 - [SPOILER] - MAD - [One Ok Rock] Mikansei Koukyoukyoku
+2025-12-09 22:40:38 - INFO - The voice handshake is being terminated for Channel ID 1030025659843620874 (Guild ID 917623502239059978)
+2025-12-09 22:41:48 - INFO - logging in using static token
+2025-12-09 22:41:50 - INFO - Shard ID None has connected to Gateway (Session ID: 0844b12c1c0705f636eb3c558d76fce8).
+2025-12-09 22:42:12 - INFO - Connecting to voice...
+2025-12-09 22:42:12 - INFO - Starting voice handshake... (connection attempt 1)
+2025-12-09 22:42:12 - INFO - Voice handshake complete. Endpoint found: c-sin11-b31354b1.discord.media:2053
+2025-12-09 22:42:13 - INFO - Voice connection complete.
+2025-12-09 22:42:18 - INFO - User otsukasaechii requested: ONE OK ROCK - Mikansei Koukyoukyoku\u300c\u672a\u5b8c\u6210\u4ea4\u97ff\u66f2\u300dLive in Yokohama Arena with lyrics\u3010ROM/ KAN/ ENG\u3011
+2025-12-09 22:45:51 - INFO - ffmpeg process 25448 successfully terminated with return code of 0.
+2025-12-09 22:46:26 - INFO - User otsukasaechii requested: Hanataba
+2025-12-09 22:46:34 - INFO - User otsukasaechii requested: Hanataba
+2025-12-09 22:46:52 - INFO - User otsukasaechii got waifu: Mai Sakurajima from Rascal Does Not Dream of Bunny Girl Senpai
+2025-12-09 22:48:12 - INFO - User chy39. got waifu: Sayu Ogiwara from Higehiro: After Being Rejected, I Shaved and Took in a High School Runaway
+2025-12-09 22:51:12 - INFO - ffmpeg process 20676 successfully terminated with return code of 0.
+2025-12-09 22:55:59 - INFO - ffmpeg process 664 successfully terminated with return code of 0.
+2025-12-09 22:57:24 - INFO - User otsukasaechii requested: Blue Amber
+2025-12-09 22:59:53 - INFO - User otsukasaechii requested: \u5b8c\u5168\u611f\u899aDreamer - ONE OK ROCK (Cover) / VESPERBELL \u30e8\u30df
+2025-12-09 23:00:52 - INFO - ffmpeg process 16512 successfully terminated with return code of 0.
+2025-12-09 23:01:15 - INFO - User otsukasaechii requested: \u3010MV\u3011\u8309\u3072\u308b\u2212\u30d5\u30ec\u30b0\u30e9\u30f3\u30b9\uff08Fragrance/\u9999\u5473\uff09
+2025-12-09 23:05:08 - INFO - ffmpeg process 26476 successfully terminated with return code of 0.
+2025-12-09 23:08:35 - INFO - ffmpeg process 14864 successfully terminated with return code of 0.
+2025-12-09 23:14:42 - INFO - User rubberdino got waifu: Keqing from Genshin Impact
+2025-12-09 23:14:49 - INFO - User otsukasaechii got waifu: Marin Kitagawa from My Dress-Up Darling
+2025-12-09 23:33:25 - INFO - User otsukasaechii got waifu: Navia from Genshin Impact
+2025-12-09 23:33:33 - INFO - User hoshizaqi got waifu: Kiana Kaslana from Honkai Impact 3rd
+2025-12-09 23:34:48 - ERROR - Ignoring exception in on_message
+Traceback (most recent call last):
+  File "C:\Users\ezraf\AppData\Local\Programs\Python\Python312\Lib\site-packages\discord\client.py", line 504, in _run_event
+    await coro(*args, **kwargs)
+  File "C:\Users\ezraf\Documents\backup ezra\Project\Music Bot\code\discord_bot.py", line 46, in on_message
+    response = get_chat_response(user_message)
+               ^^^^^^^^^^^^^^^^^
+NameError: name 'get_chat_response' is not defined
+2025-12-09 23:36:20 - INFO - The voice handshake is being terminated for Channel ID 1030025659843620874 (Guild ID 917623502239059978)
+2025-12-10 08:43:45 - INFO - logging in using static token
+2025-12-10 08:43:48 - INFO - Shard ID None has connected to Gateway (Session ID: 63ac4b23cf9e965cb97b6450867eaaec).
+2025-12-10 08:43:57 - INFO - User otsukasaechii got waifu: Saber Alter from Fate Series
+2025-12-10 09:06:34 - INFO - logging in using static token
+2025-12-10 09:06:37 - INFO - Shard ID None has connected to Gateway (Session ID: 3e1647b35d68fc25a67573923d0dddcb).
+2025-12-10 09:43:57 - INFO - logging in using static token
+2025-12-10 09:43:59 - INFO - Shard ID None has connected to Gateway (Session ID: 2379b061abfb563f3cc67b5587c0d639).
+2025-12-10 09:55:10 - INFO - logging in using static token
+2025-12-10 09:55:12 - INFO - Shard ID None has connected to Gateway (Session ID: abe809edd2bee884404b9096dd708d41).
