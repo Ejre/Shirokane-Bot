@@ -2,3 +2,4 @@
 Code/.env
 __pycache__/
 *.pyc
+*.BACKUP.py
