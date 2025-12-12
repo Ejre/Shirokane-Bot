@@ -104,11 +104,23 @@ class Waifu(commands.Cog):
         # Log request
         log_request(f"User {ctx.author} got waifu: {character_name} from {anime_name}")
     
+    def _make_api_request(self, url, method="GET", payload=None):
+        """Helper function to make synchronous API requests."""
+        try:
+            if method == "POST":
+                response = requests.post(url, data=payload, timeout=120)
+            else:
+                response = requests.get(url, timeout=120)
+            return response
+        except Exception as e:
+            print(f"[API ERROR] Request failed: {e}")
+            raise e
+
     @commands.command()
     async def gen(self, ctx, *, description: str = None):
         """
         Generate a custom anime waifu image using AI.
-        Usage: !gen <description>
+        Usage: !gen <description> (attach an image for reference)
         Example: !gen girl with long silver hair and blue eyes
         Cooldown: 10 minutes per user
         """
@@ -119,7 +131,7 @@ class Waifu(commands.Cog):
         if not description:
             embed = discord.Embed(
                 title="❌ Deskripsi Required",
-                description="Gunakan: `!gen <deskripsi>`\n\n**Contoh:**\n`!gen girl with long pink hair and green eyes`",
+                description="Gunakan: `!gen <deskripsi>`\n\n**Contoh:**\n`!gen girl with long pink hair and green eyes`\n*Anda juga bisa melampirkan gambar sebagai referensi!*",
                 color=discord.Color.red()
             )
             await ctx.reply(embed=embed)
@@ -145,31 +157,62 @@ class Waifu(commands.Cog):
                 await ctx.reply(embed=embed)
                 return
         
+        # Check for attachments (Image-to-Image)
+        attachment_url = None
+        if ctx.message.attachments:
+            attachment = ctx.message.attachments[0]
+            if attachment.content_type and attachment.content_type.startswith('image/'):
+                attachment_url = attachment.url
+            else:
+                await ctx.reply("❌ File yang dilampirkan bukan gambar!")
+                return
+
         # Send loading message
+        mode_text = "Image-to-Image" if attachment_url else "Text-to-Image"
         loading_embed = discord.Embed(
-            title="🎨 Generating Waifu...",
+            title=f"🎨 Generating Waifu ({mode_text})...",
             description=f"Sedang membuat waifu dengan deskripsi:\n`{description}`\n\nHarap tunggu sebentar...",
             color=discord.Color.blue()
         )
+        if attachment_url:
+            loading_embed.set_thumbnail(url=attachment_url)
+            
         loading_msg = await ctx.reply(embed=loading_embed)
         
         # Build optimized prompt for anime-style generation
         optimized_prompt = f"anime style, high quality anime illustration, {description}, beautiful detailed face, vibrant colors, professional anime artwork, detailed eyes, clean lineart"
         
-        # Build API URL
-        encoded_prompt = requests.utils.quote(optimized_prompt)
-        api_url = f"{AI_API_URL.replace('/search/blackbox-chat', '/maker/text2img')}?text={encoded_prompt}&apikey={AI_API_KEY}"
-        
         import functools
         
         try:
-            # Make request to image generation API in a separate thread
-            response = await self.bot.loop.run_in_executor(
-                None,
-                functools.partial(requests.get, api_url, timeout=60)
-            )
+            response = None
             
-            if response.status_code == 200:
+            if attachment_url:
+                # API Endpoint for Image-to-Image
+                api_url = f"https://api.botcahx.eu.org/api/maker/imgedit"
+                payload = {
+                    "url": attachment_url,
+                    "text": optimized_prompt,
+                    "apikey": AI_API_KEY
+                }
+                
+                # Use helper function via executor
+                response = await self.bot.loop.run_in_executor(
+                    None,
+                    functools.partial(self._make_api_request, api_url, "POST", payload)
+                )
+            else:
+                # API Endpoint for Text-to-Image
+                encoded_prompt = requests.utils.quote(optimized_prompt)
+                api_url = f"https://api.botcahx.eu.org/api/maker/text2img?text={encoded_prompt}&apikey={AI_API_KEY}"
+                
+                # Use helper function via executor
+                response = await self.bot.loop.run_in_executor(
+                    None,
+                    functools.partial(self._make_api_request, api_url, "GET")
+                )
+            
+            if response and response.status_code == 200:
                 # Save image temporarily
                 image_path = f"temp_generated_{user_id}.png"
                 with open(image_path, "wb") as f:
@@ -182,6 +225,9 @@ class Waifu(commands.Cog):
                     color=discord.Color.green()
                 )
                 embed.set_footer(text=f"Generated for {ctx.author.display_name}")
+                
+                if attachment_url:
+                    embed.add_field(name="Reference", value="[Image Link](" + attachment_url + ")", inline=True)
                 
                 # Send image
                 file = discord.File(image_path, filename="generated_waifu.png")
@@ -199,33 +245,50 @@ class Waifu(commands.Cog):
                 except:
                     pass
                 
-                # Update cooldown
+                # Update cooldown only on success
                 self.gen_waifu_cooldowns[user_id] = current_time
                 
                 # Log request
-                log_request(f"User {ctx.author} generated waifu: {description}")
+                log_request(f"User {ctx.author} generated waifu ({mode_text}): {description}")
                 
             else:
                 # API error
                 await loading_msg.delete()
+                status_code = response.status_code if response is not None else "Unknown"
+                
+                # Check for specific error codes
+                if status_code == 504:
+                    description = "Server API sedang sibuk (Gateway Timeout). Silakan coba lagi dalam beberapa saat."
+                else:
+                    # Try to get error message from response
+                    try:
+                        error_data = response.json()
+                        description = f"API Error: {error_data.get('message', str(error_data))}"
+                    except:
+                        # If not JSON (likely HTML error page), show generic message
+                        description = f"Terjadi kesalahan pada server API (Status: {status_code})."
+                    
                 error_embed = discord.Embed(
                     title="❌ Generation Failed",
-                    description=f"API returned error code: {response.status_code}\nSilakan coba lagi nanti.",
+                    description=description,
                     color=discord.Color.red()
                 )
                 await ctx.reply(embed=error_embed)
+                print(f"[GENWAIFU ERROR] API {status_code}")
                 
         except requests.exceptions.Timeout:
             await loading_msg.delete()
             error_embed = discord.Embed(
                 title="⏱️ Request Timeout",
-                description="Generasi gambar memakan waktu terlalu lama. Silakan coba lagi.",
+                description="Generasi gambar memakan waktu terlalu lama (>120s). Silakan coba lagi.",
                 color=discord.Color.red()
             )
             await ctx.reply(embed=error_embed)
             
         except Exception as e:
             await loading_msg.delete()
+            import traceback
+            traceback.print_exc()
             error_embed = discord.Embed(
                 title="❌ Error Occurred",
                 description=f"Terjadi error: {str(e)}",
