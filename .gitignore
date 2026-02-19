@@ -3,3 +3,5 @@ Code/.env
 __pycache__/
 *.pyc
 *.BACKUP.py
+logs/
+Code/logs/

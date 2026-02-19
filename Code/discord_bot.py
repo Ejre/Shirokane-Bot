@@ -60,7 +60,18 @@ async def on_message(message):
         # Get AI response
         response = await ai_cog.get_ai_response(user_message, message.author.id, use_memory=True)
         if response:
-            await message.reply(response)
+            if isinstance(response, dict):
+                text = response.get("text")
+                image = response.get("image")
+                
+                if image:
+                    embed = discord.Embed(description=text, color=discord.Color.blue())
+                    embed.set_image(url=image)
+                    await message.reply(embed=embed)
+                else:
+                    await message.reply(text)
+            else:
+                await message.reply(response)
         return
 
     # Handle keyword responses (only if exact match)

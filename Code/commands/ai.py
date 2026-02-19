@@ -10,6 +10,8 @@ import discord
 from config import AI_API_KEY, AI_API_URL
 
 
+from utils.bestdori import get_jp_event, get_rinko_cards
+
 class AI(commands.Cog):
     """AI chat and conversation functionality"""
     
@@ -31,6 +33,39 @@ class AI(commands.Cog):
         Returns:
             AI response string or None if error
         """
+        # Bestdori Data Injection
+        bestdori_context = ""
+        image_url = None
+        
+        query_lower = query.lower()
+        
+        # 1. Check for Event JP
+        if "event" in query_lower and ("jp" in query_lower or "jepang" in query_lower or "now" in query_lower or "sekarang" in query_lower):
+            event_data = get_jp_event()
+            if event_data:
+                import datetime
+                end_date = datetime.datetime.fromtimestamp(event_data['end_time'] / 1000).strftime('%d %B %Y')
+                bestdori_context += (
+                    f" [INFO UTAMA: Saat ini event di server JP adalah '{event_data['name']}'. "
+                    f"Status: {event_data['status']}. Berakhir pada: {end_date}. "
+                    f"Kamu HARUS memberitahu user tentang event ini.]"
+                )
+                image_url = event_data.get("image")
+        
+        # 2. Check for Rinko Cards
+        elif "kartu" in query_lower and ("rinko" in query_lower or "saya" in query_lower or "mu" in query_lower) and ("baru" in query_lower or "limited" in query_lower or "terakhir" in query_lower):
+            is_limited = "limited" in query_lower
+            cards = get_rinko_cards(limit=1, only_limited=is_limited)
+            if cards:
+                card = cards[0]
+                card_type = "Limited" if card['type'] in ['limited', 'dream_fes'] else "Permanent"
+                bestdori_context += (
+                    f" [INFO UTAMA: Kartu Rinko terbaru ({card_type}) adalah '{card['title']}'. "
+                    f"Rarity: {card['rarity']} Bintang. Dirilis pada server JP. "
+                    f"Jelaskan kartu ini kepada user dengan antusias.]"
+                )
+                image_url = card.get("image")
+
         # Build conversation context if memory is enabled
         if use_memory and user_id:
             if user_id not in self.user_conversations:
@@ -45,9 +80,9 @@ class AI(commands.Cog):
             
             # Build context from history
             context = "\\n".join(self.user_conversations[user_id])
-            full_query = f"{context}\\nRespond to the latest message."
+            full_query = f"{context}\\n{bestdori_context}\\nRespond to the latest message."
         else:
-            full_query = query
+            full_query = query + bestdori_context
         
         # Add tsundere personality to prompt
         # Shirokane Rinko Personality
@@ -56,9 +91,10 @@ class AI(commands.Cog):
             "Sifatmu pemalu, sopan, lembut, dan sering ragu-ragu saat berbicara. "
             "Gunakan kata-kata pengisi seperti 'ano...', 'et-to...', atau 'uuh...' di awal kalimat untuk menunjukkan keraguan. "
             "Gunakan bahasa Indonesia yang sopan dan natural, jangan kaku atau baku seperti robot. "
-            "Kamu suka bermain piano dan game online (Neo Fantasy Online). "
+            "Kamu suka bermain piano dan game online. "
             "Jangan gunakan awalan 'AI:', 'Rinko:', atau 'Bot:' dalam responmu. "
             "Jika membahas game, kamu bisa sedikit lebih bersemangat tapi tetap sopan. "
+            "Jika ada [INFO UTAMA] yang diberikan, gunakan informasi itu sebagai topik utama jawabanmu. "
             + full_query
         )
 
@@ -92,12 +128,16 @@ class AI(commands.Cog):
                                 cleaned_response = cleaned_response[len(prefix):].strip()
                         
                         response = cleaned_response
+                        
+                        if image_url:
+                            # Return both text and image
+                            return {"text": response, "image": image_url}
 
                         # Store AI response in conversation history
                         if use_memory and user_id:
                             self.user_conversations[user_id].append(f"AI: {response}")
                         
-                        return response
+                        return {"text": response}
                     else:
                         return "⚠️ Gagal mendapatkan respons dari API."
         except Exception as e:
@@ -109,7 +149,18 @@ class AI(commands.Cog):
         """Ask the AI a question with tsundere personality."""
         response = await self.get_ai_response(query)
         if response:
-            await ctx.reply(response)
+            if isinstance(response, dict):
+                text = response.get("text")
+                image = response.get("image")
+                
+                if image:
+                    embed = discord.Embed(description=text, color=discord.Color.blue())
+                    embed.set_image(url=image)
+                    await ctx.reply(embed=embed)
+                else:
+                    await ctx.reply(text)
+            else:
+                await ctx.reply(response)
     
     @commands.command()
     async def autoai(self, ctx, mode: str = None):
