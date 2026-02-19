@@ -23,12 +23,15 @@ class Waifu(commands.Cog):
         self.waifu_cooldowns = {}  # User cooldown tracking {user_id: datetime}
         self.gen_waifu_cooldowns = {}  # User cooldown for generation {user_id: datetime}
     
-    @commands.command(name="my")
+    @commands.hybrid_command(name="my")
     async def my_waifu(self, ctx):
         """
         Get a random waifu image with character and anime info.
         Cooldown: 5 minutes per user.
         """
+        if ctx.interaction:
+            await ctx.interaction.response.defer()
+
         user_id = ctx.author.id
         current_time = datetime.now()
         
@@ -49,7 +52,7 @@ class Waifu(commands.Cog):
                     description=f"Kamu harus menunggu **{minutes}m {seconds}s** lagi untuk menggunakan command ini!",
                     color=discord.Color.red()
                 )
-                await ctx.reply(embed=embed)
+                await ctx.send(embed=embed)
                 return
         
         # Load waifu metadata
@@ -59,14 +62,14 @@ class Waifu(commands.Cog):
             with open(metadata_path, "r", encoding="utf-8") as f:
                 waifu_list = json.load(f)
         except FileNotFoundError:
-            await ctx.reply("❌ Waifu database tidak ditemukan! Pastikan file `waifu_data/metadata.json` ada.")
+            await ctx.send("❌ Waifu database tidak ditemukan! Pastikan file `waifu_data/metadata.json` ada.")
             return
         except json.JSONDecodeError:
-            await ctx.reply("❌ Waifu database rusak! Periksa format `metadata.json`.")
+            await ctx.send("❌ Waifu database rusak! Periksa format `metadata.json`.")
             return
         
         if not waifu_list:
-            await ctx.reply("❌ Tidak ada waifu dalam database!")
+            await ctx.send("❌ Tidak ada waifu dalam database!")
             return
         
         # Select random waifu
@@ -80,7 +83,7 @@ class Waifu(commands.Cog):
         
         # Check if image exists
         if not os.path.exists(image_path):
-            await ctx.reply(f"❌ Gambar `{image_file}` tidak ditemukan di folder `waifu_data/images/`!")
+            await ctx.send(f"❌ Gambar `{image_file}` tidak ditemukan di folder `waifu_data/images/`!")
             return
         
         # Create embed
@@ -99,7 +102,7 @@ class Waifu(commands.Cog):
         self.waifu_cooldowns[user_id] = current_time
         
         # Send embed with image
-        await ctx.reply(file=file, embed=embed)
+        await ctx.send(file=file, embed=embed)
         
         # Log request
         log_request(f"User {ctx.author} got waifu: {character_name} from {anime_name}")
@@ -116,14 +119,17 @@ class Waifu(commands.Cog):
             print(f"[API ERROR] Request failed: {e}")
             raise e
 
-    @commands.command()
+    @commands.hybrid_command()
     async def gen(self, ctx, *, description: str = None):
         """
         Generate a custom anime waifu image using AI.
-        Usage: !gen <description> (attach an image for reference)
-        Example: !gen girl with long silver hair and blue eyes
+        Usage: /gen <description> (attach an image for reference)
+        Example: /gen girl with long silver hair and blue eyes
         Cooldown: 10 minutes per user
         """
+        if ctx.interaction:
+            await ctx.interaction.response.defer()
+
         user_id = ctx.author.id
         current_time = datetime.now()
         
@@ -131,10 +137,10 @@ class Waifu(commands.Cog):
         if not description:
             embed = discord.Embed(
                 title="❌ Deskripsi Required",
-                description="Gunakan: `!gen <deskripsi>`\n\n**Contoh:**\n`!gen girl with long pink hair and green eyes`\n*Anda juga bisa melampirkan gambar sebagai referensi!*",
+                description="Gunakan: `/gen <deskripsi>`\n\n**Contoh:**\n`/gen girl with long pink hair and green eyes`\n*Anda juga bisa melampirkan gambar sebagai referensi!*",
                 color=discord.Color.red()
             )
-            await ctx.reply(embed=embed)
+            await ctx.send(embed=embed)
             return
         
         # Check cooldown

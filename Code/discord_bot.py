@@ -28,6 +28,9 @@ async def on_ready():
     """Called when bot successfully connects to Discord."""
     print(f"✅ Bot {bot.user} is now online!")
     print(f"📦 Loaded {len(bot.cogs)} cogs: {', '.join(bot.cogs.keys())}")
+    print(f"🌳 Tree Commands: {len(bot.tree.get_commands())}")
+    for cmd in bot.tree.get_commands():
+        print(f" - /{cmd.name}")
 
 
 @bot.event
@@ -90,7 +93,24 @@ async def on_message(message):
 # ============================================================================
 # HELPER COMMANDS
 # ============================================================================
+# ============================================================================
+# HELPER COMMANDS
+# ============================================================================
 bot.remove_command("help")  # Remove default help command
+
+@bot.command()
+async def sync(ctx):
+    """Sync slash commands (Owner only)."""
+    # Replace with your ID for safety, or use @commands.is_owner() if owner_id is set in Bot
+    if ctx.author.id not in [765561396225507349, 1276872790376579073]: 
+        return await ctx.send("Hanya owner yang bisa sync command.")
+
+    await ctx.send("Syncing commands...")
+    try:
+        synced = await bot.tree.sync()
+        await ctx.send(f"✅ Synced {len(synced)} commands globally!")
+    except Exception as e:
+        await ctx.send(f"❌ Sync failed: {e}")
 
 
 @bot.command(aliases=["h"])

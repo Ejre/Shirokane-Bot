@@ -86,9 +86,12 @@ class Music(commands.Cog):
         # Music queue per server
         self.queues = {}
     
-    @commands.command(aliases=["j"])
+    @commands.hybrid_command(aliases=["j"])
     async def join(self, ctx):
         """Make the bot join your voice channel."""
+        if ctx.interaction:
+            await ctx.interaction.response.defer()
+
         if ctx.author.voice:
             channel = ctx.author.voice.channel
             await channel.connect()
@@ -96,11 +99,14 @@ class Music(commands.Cog):
         else:
             await ctx.send("🚫 You need to be in a voice channel first!")
     
-    @commands.command(aliases=["p"])
-    async def play(self, ctx, *, query):
+    @commands.hybrid_command(aliases=["p"])
+    async def play(self, ctx, *, query: str):
         """
         Play a song from YouTube.
         """
+        if ctx.interaction:
+            await ctx.interaction.response.defer()
+
         guild_id = ctx.guild.id
         
         # Initialize queue for this server if not exists
@@ -119,7 +125,7 @@ class Music(commands.Cog):
                 return
         
         await ctx.send("🔍 Searching/Loading...")
-
+        
         # Normalize text and handle queries
         query = unicodedata.normalize("NFKC", query)
         
@@ -268,51 +274,43 @@ class Music(commands.Cog):
         else:
             await ctx.send("🎵 No more songs in queue.")
     
-    @commands.command(aliases=["s"])
+    @commands.hybrid_command(aliases=["s"])
     async def skip(self, ctx):
         """Skip the current song."""
-        guild_id = ctx.guild.id
-        voice_client = discord.utils.get(self.bot.voice_clients, guild=ctx.guild)
-        
-        if voice_client and voice_client.is_playing():
-            voice_client.stop()
-            await ctx.send("⏭ Song skipped!")
-            await self.play_next(ctx, voice_client, guild_id)
-    
-    @commands.command(aliases=["queue", "q"])
-
-    async def queue_list(self, ctx):
-        """Display the current song queue with pagination."""
-        guild_id = ctx.guild.id
-        
-        if guild_id in self.queues and self.queues[guild_id]:
-            queue_items = list(self.queues[guild_id])
-            
-            # Use Pagination View
-            view = QueuePaginationView(ctx, queue_items)
-            view._update_buttons() # Update initial button state
-            
-            await ctx.send(embed=view._get_page_content(), view=view)
+        if ctx.voice_client and ctx.voice_client.is_playing():
+            ctx.voice_client.stop()
+            await ctx.send("⏭ Skipped!")
         else:
-             embed = discord.Embed(
-                title="📜 Queue List",
-                description="📭 The queue is empty.",
-                color=discord.Color.light_grey()
-             )
-             await ctx.send(embed=embed)
-    
-    @commands.command(aliases=["l"])
+            await ctx.send("❌ Tidak ada lagu yang sedang diputar.")
+
+    @commands.hybrid_command(aliases=["q", "queue_list"])
+    async def queue(self, ctx):
+        """Show the current song queue."""
+        if not self.music_queue:
+            await ctx.send("📭 Queue kosong.")
+            return
+
+        embed = discord.Embed(title="🎶 Music Queue", color=discord.Color.blue())
+        desc = ""
+        for i, (title, url) in enumerate(self.music_queue):
+            desc += f"{i+1}. [{title}]({url})\n"
+            if len(desc) > 3800:
+                desc += "... (dan lainnya)"
+                break
+        
+        embed.description = desc
+        await ctx.send(embed=embed)
+
+    @commands.hybrid_command(aliases=["l", "disconnect"])
     async def leave(self, ctx):
         """Disconnect the bot from the voice channel."""
-        guild_id = ctx.guild.id
-        voice_client = discord.utils.get(self.bot.voice_clients, guild=ctx.guild)
-        
-        if voice_client:
-            self.queues.pop(guild_id, None)  # Clear queue for this server
-            await voice_client.disconnect()
-            await ctx.send("👋 Bot exits voice channel.")
+        if ctx.voice_client:
+            # Clear queue
+            self.music_queue = []
+            await ctx.voice_client.disconnect()
+            await ctx.send("👋 Haaik, Rinko pamit dulu ya!")
         else:
-            await ctx.send("🚫 Bot is not in voice channel.")
+            await ctx.send("❌ Bot tidak berada di voice channel.")
 
 
 async def setup(bot):

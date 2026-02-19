@@ -26,6 +26,13 @@ ROLE_REWARDS = {
     50: 1473888079054897346   # Legend
 }
 
+# Admin Restriction (User IDs who can use !setlevel and !addxp)
+# REPLACE WITH YOUR USER ID(s)
+ADMIN_IDS = [
+    765561396225507349, # Contoh ID (Ganti dengan ID-mu!)
+    1276872790376579073
+]
+
 class Leveling(commands.Cog):
     """Leveling system with XP and Rank commands"""
     
@@ -114,9 +121,13 @@ class Leveling(commands.Cog):
             # Just update XP
             update_user_xp(message.author.id, new_xp, current_level)
 
-    @commands.command(aliases=["level"])
+    @commands.hybrid_command(aliases=["level"])
     async def rank(self, ctx, member: discord.Member = None):
         """Check your current level and XP."""
+        # Defer if interaction (slash command) takes time, though rank should be fast
+        if ctx.interaction:
+            await ctx.interaction.response.defer()
+            
         member = member or ctx.author
         user_data = get_user_data(member.id)
         
@@ -153,15 +164,19 @@ class Leveling(commands.Cog):
         embed.add_field(name="Progress", value=f"{bar_str} {int(percentage)}%", inline=False)
         embed.set_footer(text=f"Next Level at {next_level_xp} XP")
         
-        await ctx.reply(embed=embed)
+        # Use send instead of reply for hybrid compatibility
+        await ctx.send(embed=embed)
 
-    @commands.command(aliases=["top", "lb"])
+    @commands.hybrid_command(aliases=["top", "lb"])
     async def leaderboard(self, ctx):
         """Show top 10 users by XP."""
+        if ctx.interaction:
+            await ctx.interaction.response.defer()
+
         top_users = get_top_users(limit=10)
         
         if not top_users:
-            await ctx.reply("Belum ada data leaderboard.")
+            await ctx.send("Belum ada data leaderboard.")
             return
 
         embed = discord.Embed(
@@ -189,37 +204,33 @@ class Leveling(commands.Cog):
             desc += f"**{medal} {name}** — Lvl {level} ({xp} XP)\n"
             
         embed.description = desc
-        await ctx.reply(embed=embed)
+        await ctx.send(embed=embed)
 
-    @commands.command()
+    @commands.hybrid_command()
     async def roles(self, ctx):
         """List all roles and their IDs (Helper for setup)."""
+        if ctx.interaction:
+            await ctx.interaction.response.defer()
+
         roles = ctx.guild.roles
         desc = ""
         for role in reversed(roles): # Show highest role first
             if role.name != "@everyone":
-                desc += f"{role.name}: `{role.id}`\n"
+                line = f"{role.name}: `{role.id}`\n"
+                # Check length limit (4096 for embed desc)
+                if len(desc) + len(line) > 4000:
+                    desc += "... (truncated)"
+                    break
+                desc += line
         
         embed = discord.Embed(
             title="📜 Server Roles",
             description=desc,
             color=discord.Color.blue()
         )
-        await ctx.reply(embed=embed)
+        await ctx.send(embed=embed)
 
-# Admin Restriction (User IDs who can use !setlevel and !addxp)
-# REPLACE WITH YOUR USER ID(s)
-ADMIN_IDS = [
-    765561396225507349, # Contoh ID (Ganti dengan ID-mu!)
-    1276872790376579073
-]
 
-class Leveling(commands.Cog):
-    """Leveling system with XP and Rank commands"""
-    
-    def __init__(self, bot):
-        self.bot = bot
-        self._cd = commands.CooldownMapping.from_cooldown(1, 60, commands.BucketType.user) # 1 XP gain per 60s
 
     def is_admin(self, ctx):
         """Check if user is in ADMIN_IDS."""
@@ -239,8 +250,10 @@ class Leveling(commands.Cog):
         xp_needed = self.get_xp_for_level(level)
         update_user_xp(member.id, xp_needed, level)
         
-        # Check for role rewards for the new level
-        await self.check_role_reward(ctx.message, member, level)
+        # Assign only the HIGHEST milestone role the user qualifies for
+        highest_milestone = max((m for m in ROLE_REWARDS if m <= level), default=None)
+        if highest_milestone:
+            await self.check_role_reward(ctx.message, member, highest_milestone)
         
         embed = discord.Embed(
             title="🛠️ Admin Level Set",
@@ -270,14 +283,16 @@ class Leveling(commands.Cog):
         # Determine if level changed
         if new_level > current_level:
             # Send Level Up message
-             embed = discord.Embed(
+            embed = discord.Embed(
                 title="🎉 Admin Gift Level Up!",
                 description=f"Selamat {member.mention}, kamu naik ke **Level {new_level}** berkat admin!",
                 color=discord.Color.gold()
             )
-             await ctx.send(embed=embed)
-             # Check rewards
-             await self.check_role_reward(ctx.message, member, new_level)
+            await ctx.send(embed=embed)
+            # Assign only the HIGHEST milestone role the user qualifies for
+            highest_milestone = max((m for m in ROLE_REWARDS if m <= new_level), default=None)
+            if highest_milestone and highest_milestone > current_level:
+                await self.check_role_reward(ctx.message, member, highest_milestone)
         
         update_user_xp(member.id, new_xp, new_level)
         

@@ -82,30 +82,36 @@ class Anime(commands.Cog):
         
         return embed
 
-    @commands.command(aliases=["ani", "a"])
+    @commands.hybrid_command(aliases=["ani", "a"])
     async def anime(self, ctx, *, query: str):
         """
         Search for an anime by title.
-        Usage: !anime <title>
+        Usage: /anime <title>
         """
+        if ctx.interaction:
+            await ctx.interaction.response.defer()
+            
         async with ctx.typing():
             data = await self.fetch_anime_data("anime", params={"q": query, "limit": 1})
             
             if data:
                 embed = self.create_anime_embed(data)
                 if embed:
-                    await ctx.reply(embed=embed)
+                    await ctx.send(embed=embed)
                 else:
-                    await ctx.reply(f"❌ Tidak ditemukan anime dengan judul '{query}'.")
+                    await ctx.send(f"❌ Tidak ditemukan anime dengan judul '{query}'.")
             else:
-                await ctx.reply("⚠️ Terjadi kesalahan saat menghubungi MyAnimeList.")
+                await ctx.send("⚠️ Terjadi kesalahan saat menghubungi MyAnimeList.")
 
-    @commands.command(aliases=["rec", "saran"])
+    @commands.hybrid_command(aliases=["rec", "saran"])
     async def recommend(self, ctx):
         """
         Get a random anime recommendation.
-        Usage: !recommend
+        Usage: /recommend
         """
+        if ctx.interaction:
+            await ctx.interaction.response.defer()
+
         async with ctx.typing():
             # Randomly choose between "Top Anime" (random page) or completely "Random Anime"
             # to ensure quality but also variety
@@ -128,11 +134,11 @@ class Anime(commands.Cog):
             if data:
                 embed = self.create_anime_embed(data)
                 if embed:
-                    await ctx.reply(content="✨ **Rekomendasi Anime Untukmu:**", embed=embed)
+                    await ctx.send(content="✨ **Rekomendasi Anime Untukmu:**", embed=embed)
                 else:
-                     await ctx.reply("❌ Gagal mengambil data rekomendasi.")
+                     await ctx.send("❌ Gagal mengambil data rekomendasi.")
             else:
-                await ctx.reply("⚠️ Terjadi kesalahan saat menghubungi MyAnimeList.")
+                await ctx.send("⚠️ Terjadi kesalahan saat menghubungi MyAnimeList.")
 
 async def setup(bot):
     await bot.add_cog(Anime(bot))
