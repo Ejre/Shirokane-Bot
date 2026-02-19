@@ -115,7 +115,7 @@ class Leveling(commands.Cog):
         new_xp = current_xp + xp_gain
         
         # Check Level Up (updates DB inside)
-        leveled_up = await self.check_level_up(message.author, new_xp, current_level)
+        leveled_up = await self.check_level_up(message, new_xp, current_level)
         
         if not leveled_up:
             # Just update XP

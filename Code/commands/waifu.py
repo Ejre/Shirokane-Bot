@@ -265,7 +265,10 @@ class Waifu(commands.Cog):
                             f"Sedang membuat waifu dengan deskripsi:\n`{description}`\n\n"
                             f"⏳ Posisi antrian: **{queue_pos}** | Estimasi: **{wait_time}s**"
                         )
-                        await loading_msg.edit(embed=loading_embed)
+                        try:
+                            await loading_msg.edit(embed=loading_embed)
+                        except Exception:
+                            pass  # Interaction token expired (>15min), continue polling silently
 
                 if not image_url:
                     await loading_msg.delete()
@@ -275,13 +278,19 @@ class Waifu(commands.Cog):
                 # 3. Download the image
                 async with session.get(image_url, timeout=aiohttp.ClientTimeout(total=30)) as img_resp:
                     if img_resp.status != 200:
-                        await loading_msg.delete()
+                        try:
+                            await loading_msg.delete()
+                        except Exception:
+                            pass
                         await ctx.send("❌ Gagal mendownload gambar hasil generate.")
                         return
                     image_bytes = await img_resp.read()
 
             # 4. Send result
-            await loading_msg.delete()
+            try:
+                await loading_msg.delete()
+            except Exception:
+                pass  # Token expired, can't delete loading message
 
             embed = discord.Embed(
                 title="✨ Waifu Generated!",
