@@ -41,38 +41,33 @@ class Leveling(commands.Cog):
         # Lvl 5: 2500
         return 100 * (level ** 2)
 
-    async def check_level_up(self, user, current_xp, current_level):
+    async def check_level_up(self, message, current_xp, current_level):
         """Check if user should level up and handle rewards."""
+        user = message.author
         next_level = current_level + 1
         xp_needed = self.get_xp_for_level(next_level)
         
         if current_xp >= xp_needed:
             new_level = current_level + 1
-            # Recurse in case of massive XP gain (unlikely but safe)
-            # For simplicity, just increment once per message
             
             # Update DB
             update_user_xp(user.id, current_xp, new_level)
             
-            # Send notification
-            try:
-                embed = discord.Embed(
-                    title="🎉 Level Up!",
-                    description=f"Selamat {user.mention}, kamu naik ke **Level {new_level}**!",
-                    color=discord.Color.gold()
-                )
-                await user.send(embed=embed)
-            except:
-                # Fallback if DM fails (user blocked DMs)
-                pass
+            # Send notification in CHANNEL
+            embed = discord.Embed(
+                title="🎉 Level Up!",
+                description=f"Selamat {user.mention}, kamu naik ke **Level {new_level}**!",
+                color=discord.Color.gold()
+            )
+            await message.channel.send(embed=embed)
 
             # Check Role Rewards
-            await self.check_role_reward(user, new_level)
+            await self.check_role_reward(message, user, new_level)
             
             return True
         return False
 
-    async def check_role_reward(self, member, level):
+    async def check_role_reward(self, message, member, level):
         """Assign role if milestone reached."""
         role_id = ROLE_REWARDS.get(level)
         if role_id and role_id != 0:
@@ -80,16 +75,13 @@ class Leveling(commands.Cog):
             if role:
                 try:
                     await member.add_roles(role)
-                    # Notify user about new role
-                    try:
-                         embed = discord.Embed(
-                            title="🏅 Role Reward Unlocked!",
-                            description=f"Kamu mendapatkan role baru: **{role.name}**!",
-                            color=discord.Color.green()
-                        )
-                         await member.send(embed=embed)
-                    except:
-                        pass
+                    # Notify user about new role in CHANNEL
+                    embed = discord.Embed(
+                        title="🏅 Role Reward Unlocked!",
+                        description=f"Kamu mendapatkan role baru: **{role.name}**!",
+                        color=discord.Color.green()
+                    )
+                    await message.channel.send(embed=embed)
                 except Exception as e:
                     print(f"[Leveling] Failed to add role {role_id} to {member}: {e}")
 
@@ -212,6 +204,87 @@ class Leveling(commands.Cog):
             title="📜 Server Roles",
             description=desc,
             color=discord.Color.blue()
+        )
+        await ctx.reply(embed=embed)
+
+# Admin Restriction (User IDs who can use !setlevel and !addxp)
+# REPLACE WITH YOUR USER ID(s)
+ADMIN_IDS = [
+    765561396225507349, # Contoh ID (Ganti dengan ID-mu!)
+    1276872790376579073
+]
+
+class Leveling(commands.Cog):
+    """Leveling system with XP and Rank commands"""
+    
+    def __init__(self, bot):
+        self.bot = bot
+        self._cd = commands.CooldownMapping.from_cooldown(1, 60, commands.BucketType.user) # 1 XP gain per 60s
+
+    def is_admin(self, ctx):
+        """Check if user is in ADMIN_IDS."""
+        return ctx.author.id in ADMIN_IDS
+
+    # ... (rest of methods)
+
+    # ADMIN COMMANDS
+    @commands.command()
+    async def setlevel(self, ctx, member: discord.Member, level: int):
+        """Set a user's level directly (Owner only)."""
+        # Security Check
+        if ctx.author.id not in ADMIN_IDS:
+            await ctx.reply("⛔ **Akses Ditolak!** Command ini khusus Owner.")
+            return
+
+        xp_needed = self.get_xp_for_level(level)
+        update_user_xp(member.id, xp_needed, level)
+        
+        # Check for role rewards for the new level
+        await self.check_role_reward(ctx.message, member, level)
+        
+        embed = discord.Embed(
+            title="🛠️ Admin Level Set",
+            description=f"Set level **{member.display_name}** ke **Level {level}** (XP: {xp_needed}).",
+            color=discord.Color.red()
+        )
+        await ctx.reply(embed=embed)
+
+    @commands.command()
+    async def addxp(self, ctx, member: discord.Member, amount: int):
+        """Give XP to a user (Owner only)."""
+        # Security Check
+        if ctx.author.id not in ADMIN_IDS:
+             await ctx.reply("⛔ **Akses Ditolak!** Command ini khusus Owner.")
+             return
+
+        user_data = get_user_data(member.id)
+        current_xp = user_data["xp"] or 0
+        current_level = user_data["level"] or 0
+        
+        new_xp = current_xp + amount
+        
+        # Check if this new XP causes a level up
+        import math
+        new_level = int(math.sqrt(new_xp / 100))
+        
+        # Determine if level changed
+        if new_level > current_level:
+            # Send Level Up message
+             embed = discord.Embed(
+                title="🎉 Admin Gift Level Up!",
+                description=f"Selamat {member.mention}, kamu naik ke **Level {new_level}** berkat admin!",
+                color=discord.Color.gold()
+            )
+             await ctx.send(embed=embed)
+             # Check rewards
+             await self.check_role_reward(ctx.message, member, new_level)
+        
+        update_user_xp(member.id, new_xp, new_level)
+        
+        embed = discord.Embed(
+            title="🛠️ Admin XP Gift",
+            description=f"Berikan **{amount} XP** ke {member.display_name}.\nTotal XP: {new_xp} (Lvl {new_level})",
+            color=discord.Color.red()
         )
         await ctx.reply(embed=embed)
 

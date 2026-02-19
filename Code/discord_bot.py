@@ -103,21 +103,24 @@ async def help(ctx):
     )
     
     # Music commands
-    embed.add_field(name="🎶 **!join / !j**", value="Make the bot join your voice channel.", inline=False)
-    embed.add_field(name="🎵 **!play / !p**", value="Play a song from YouTube or a playlist.", inline=False)
-    embed.add_field(name="⏭ **!skip / !s**", value="Skip the current song.", inline=False)
-    embed.add_field(name="📜 **!queue_list / !queue / !q**", value="Show the current song queue.", inline=False)
-    embed.add_field(name="👋 **!leave /!l**", value="Disconnect the bot from the voice channel.", inline=False)
+    embed.add_field(name="🎶 **Music**", value="`!play <query>`: Play song\n`!skip`: Skip song\n`!queue`: Show queue\n`!leave`: Disconnect", inline=False)
     
     # AI commands
-    embed.add_field(name="🤖 **!ai <pertanyaan>**", value="Ask the AI a question (tsundere mode).", inline=False)
-    embed.add_field(name="🔄 **!autoai <on/off>**", value="Toggle auto-AI mode. When ON, bot responds to all your messages without needing !ai.", inline=False)
+    embed.add_field(name="🤖 **AI Chat**", value="`!ai <text>`: Chat with Rinko\n`!autoai <on/off>`: Toggle Auto-Reply", inline=False)
     
     # Waifu commands
-    embed.add_field(name="💖 **!my**", value="Get a random waifu with character info. (Cooldown: 5 minutes)", inline=False)
-    embed.add_field(name="🎨 **!gen <description>**", value="Generate custom anime image with AI. (Cooldown: 10 minutes)", inline=False)
+    embed.add_field(name="💖 **Waifu**", value="`!my`: Random waifu info (CD: 5m)\n`!gen <desc>`: Generate anime art (CD: 10m)", inline=False)
     
-    embed.set_footer(text="Use these commands to control the music bot!")
+    # Leveling System
+    embed.add_field(name="� **Leveling**", value="`!rank`: Cek Level & XP\n`!leaderboard`: Top 10 users\n`!roles`: List role rewards", inline=False)
+
+    # Anime & Fun
+    embed.add_field(name="🎬 **Anime & Fun**", value="`!anime <judul>`: Cari info anime\n`!recommend`: Rekomendasi anime random\n`!valrank`: Cek rank Valorant (Fun)", inline=False)
+
+    # Admin (Owner Only)
+    embed.add_field(name="🛠️ **Admin/Owner**", value="`!setlevel @user <lvl>`: Set level manual\n`!addxp @user <amount>`: Tambah XP manual", inline=False)
+
+    embed.set_footer(text="Shirokane Bot v2.0 - Leveling System Added!")
     
     await ctx.send(embed=embed)
 
