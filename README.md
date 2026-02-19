@@ -20,6 +20,12 @@ Engage in conversations with an AI that mimics the personality of Shirokane Rink
 - **Waifu Collection**: Gacha-style waifu collection system.
 - **AI Image Gen**: Generate anime-style images from text descriptions.
 
+### 🎸 Bestdori Integration (New!)
+The bot is now integrated with the **Bestdori API** to provide real-time BanG Dream! information.
+- **Card Search**: Ask for cards by character (e.g. "Kartu Yukina") or type (e.g. "Kartu Dream Fest Rinko").
+- **Event Info**: Get details about the current JP event (e.g. "Event JP sekarang apa?").
+- **Smart Responses**: AI responses now include card images in a clean Embed format.
+
 ### 🎮 Other Features
 - **Valorant Stats**: (Coming soon) Check player stats.
 - **Fun Commands**: Keyword auto-responses and more.
@@ -102,7 +108,7 @@ Before you begin, ensure you have met the following requirements:
 ### 🤖 AI Commands
 | Command | Description |
 | :--- | :--- |
-| `!ai <message>` | Chat with Shirokane Rinko AI. |
+| `!ai <message>` | Chat with Shirokane Rinko AI. <br> **Try asking:** <br> - "Kartu Dream Fest Rinko" <br> - "Event JP sekarang apa?" <br> - "Gacha terbaru" |
 | `!autoai <on/off>` | Toggle continuous chat mode (no prefix needed). |
 
 ### 🌸 Waifu & Fun

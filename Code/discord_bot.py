@@ -64,12 +64,15 @@ async def on_message(message):
                 text = response.get("text")
                 image = response.get("image")
                 
-                if image:
-                    embed = discord.Embed(description=text, color=discord.Color.blue())
-                    embed.set_image(url=image)
-                    await message.reply(embed=embed)
-                else:
+                # Send text first as regular message
+                if text:
                     await message.reply(text)
+                
+                # Send image as embed if available
+                if image:
+                    embed = discord.Embed(color=discord.Color.blue())
+                    embed.set_image(url=image)
+                    await message.channel.send(embed=embed)
             else:
                 await message.reply(response)
         return

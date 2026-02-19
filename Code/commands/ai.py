@@ -10,7 +10,7 @@ import discord
 from config import AI_API_KEY, AI_API_URL
 
 
-from utils.bestdori import get_jp_event, get_rinko_cards
+from utils.bestdori import get_jp_event, get_character_cards, CHARACTER_MAP
 
 class AI(commands.Cog):
     """AI chat and conversation functionality"""
@@ -52,19 +52,43 @@ class AI(commands.Cog):
                 )
                 image_url = event_data.get("image")
         
-        # 2. Check for Rinko Cards
-        elif "kartu" in query_lower and ("rinko" in query_lower or "saya" in query_lower or "mu" in query_lower) and ("baru" in query_lower or "limited" in query_lower or "terakhir" in query_lower):
-            is_limited = "limited" in query_lower
-            cards = get_rinko_cards(limit=1, only_limited=is_limited)
-            if cards:
-                card = cards[0]
-                card_type = "Limited" if card['type'] in ['limited', 'dream_fes'] else "Permanent"
-                bestdori_context += (
-                    f" [INFO UTAMA: Kartu Rinko terbaru ({card_type}) adalah '{card['title']}'. "
-                    f"Rarity: {card['rarity']} Bintang. Dirilis pada server JP. "
-                    f"Jelaskan kartu ini kepada user dengan antusias.]"
-                )
-                image_url = card.get("image")
+        # 2. Check for Character Cards (Generic)
+        elif "kartu" in query_lower or "card" in query_lower:
+            target_char = None
+            target_type = None
+            
+            # Detect Character
+            for char_name in CHARACTER_MAP.keys():
+                if char_name in query_lower:
+                    target_char = char_name
+                    break
+            
+            # Detect Type
+            if "dream" in query_lower and "fest" in query_lower:
+                target_type = "dream_fes"
+            elif "kira" in query_lower and "fest" in query_lower:
+                target_type = "kirafes"
+            elif "limited" in query_lower:
+                target_type = "limited"
+            elif "birthday" in query_lower:
+                target_type = "birthday"
+            
+            if target_char:
+                cards = get_character_cards(target_char, limit=1, card_type_filter=target_type)
+                if cards:
+                    card = cards[0]
+                    card_type_display = card['type'].replace("_", " ").title()
+                    bestdori_context += (
+                        f" [INFO UTAMA: Kartu {target_char.title()} ({card_type_display}) yang ditemukan adalah '{card['title']}'. "
+                        f"Rarity: {card['rarity']} Bintang. Dirilis pada server JP. "
+                        f"Jelaskan kartu ini kepada user dengan antusias.]"
+                    )
+                    image_url = card.get("image")
+                else:
+                     bestdori_context += (
+                        f" [INFO UTAMA: Tidak ditemukan kartu {target_type} untuk karakter {target_char}. "
+                        f"Beritahu user bahwa kartu tersebut belum ada atau tidak ditemukan.]"
+                    )
 
         # Build conversation context if memory is enabled
         if use_memory and user_id:
@@ -153,12 +177,15 @@ class AI(commands.Cog):
                 text = response.get("text")
                 image = response.get("image")
                 
-                if image:
-                    embed = discord.Embed(description=text, color=discord.Color.blue())
-                    embed.set_image(url=image)
-                    await ctx.reply(embed=embed)
-                else:
+                # Send text first as regular message
+                if text:
                     await ctx.reply(text)
+                
+                # Send image as embed if available
+                if image:
+                    embed = discord.Embed(color=discord.Color.blue())
+                    embed.set_image(url=image)
+                    await ctx.send(embed=embed)
             else:
                 await ctx.reply(response)
     

@@ -77,29 +77,60 @@ def get_jp_event():
         print(f"[Bestdori Error] get_jp_event: {e}")
         return None
 
-def get_rinko_cards(limit=1, only_limited=False):
+# Character ID Mapping
+CHARACTER_MAP = {
+    "kasumi": 1, "tae": 2, "rimi": 3, "saaya": 4, "arisa": 5, # Poppin'Party
+    "ran": 6, "moca": 7, "himari": 8, "tomoe": 9, "tsugumi": 10, # Afterglow
+    "kokoro": 11, "kaoru": 12, "hagumi": 13, "kanon": 14, "misaki": 15, # HHW
+    "aya": 16, "hina": 17, "chisato": 18, "maya": 19, "eve": 20, # Pastel*Palettes
+    "yukina": 21, "sayo": 22, "lisa": 23, "ako": 24, "rinko": 25, # Roselia
+    "mashiro": 26, "touko": 27, "nanami": 28, "tsukushi": 29, "rui": 30, # Morfonica
+    "layer": 31, "lock": 32, "masking": 33, "pareo": 34, "chu2": 35, # RAS
+    "rei": 31, "roku": 32, "masuki": 33, "chiyuri": 35 # RAS Alternate names
+}
+
+def get_character_cards(character_name, limit=1, card_type_filter=None):
     """
-    Fetches cards for Shirokane Rinko (Character ID 24).
+    Fetches cards for a specific character with optional type filtering.
     Args:
+        character_name (str): Name of the character (e.g., "yukina", "rinko").
         limit (int): Number of cards to return.
-        only_limited (bool): If True, return only limited cards.
+        card_type_filter (str): Specific card type to filter (e.g., "dream_fes", "kirafes", "limited").
     Returns list of dicts with card info and image.
     """
+    char_id = CHARACTER_MAP.get(character_name.lower())
+    if not char_id:
+        return []
+
     try:
         response = requests.get(API_CARDS)
         if response.status_code != 200:
             return []
             
         all_cards = response.json()
-        rinko_cards = []
+        found_cards = []
         
         for card_id, card_data in all_cards.items():
-            if card_data.get("characterId") == 25:
-                # Check for limited if requested
+            if card_data.get("characterId") == char_id:
+                # Check for limited/specific type if requested
                 card_type = card_data.get("type", "permanent")
                 
-                if only_limited:
-                    if card_type not in ["limited", "dream_fes", "birthday", "kirafes"]:
+                # Filter Logic
+                if card_type_filter:
+                    filter_lower = card_type_filter.lower()
+                    
+                    # Direct Match
+                    if filter_lower in card_type.lower():
+                        pass 
+                    # Special Handling for "limited" general request vs specific "limited" type
+                    elif filter_lower == "limited":
+                        if card_type not in ["limited", "dream_fes", "birthday", "kirafes"]:
+                            continue
+                    # Handle DreamFes / KiraFes aliases
+                    elif "dream" in filter_lower or "fes" in filter_lower:
+                        if "dream_fes" not in card_type and "kirafes" not in card_type:
+                            continue
+                    else:
                         continue
                 
                 # Construct data
@@ -120,7 +151,7 @@ def get_rinko_cards(limit=1, only_limited=False):
                 released_at = card_data.get("releasedAt", [0])
                 release_date = released_at[0] if released_at else 0
 
-                rinko_cards.append({
+                found_cards.append({
                     "id": card_id,
                     "title": prefix,
                     "rarity": rarity,
@@ -130,10 +161,10 @@ def get_rinko_cards(limit=1, only_limited=False):
                 })
         
         # Sort by release date (newest first)
-        rinko_cards.sort(key=lambda x: int(x["release_date"] or 0), reverse=True)
+        found_cards.sort(key=lambda x: int(x["release_date"] or 0), reverse=True)
         
-        return rinko_cards[:limit]
+        return found_cards[:limit]
 
     except Exception as e:
-        print(f"[Bestdori Error] get_rinko_cards: {e}")
+        print(f"[Bestdori Error] get_character_cards: {e}")
         return []
