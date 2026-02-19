@@ -17,6 +17,7 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 AI_API_KEY = os.getenv("AI_API_KEY")
 AI_API_URL = "https://api.botcahx.eu.org/api/search/blackbox-chat"
 VALORANT_API_KEY = os.getenv("VALORANT_API_KEY")
+STABLE_HORDE_API_KEY = os.getenv("STABLE_HORDE_API_KEY")
 
 # Alternative API key: IQeFNK4E
     
