@@ -5,3 +5,8 @@ __pycache__/
 *.BACKUP.py
 logs/
 Code/logs/
+*.db
+Code/data/*.db
+Code/data/leveling.db
+**/data/*.db
+**/*.db

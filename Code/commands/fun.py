@@ -42,8 +42,8 @@ class Fun(commands.Cog):
         else:
             await ctx.send("🚫 Kamu belum memiliki daftar agent favorit! Minta admin untuk menambahkannya.")
     
-    @commands.command()
-    async def rank(self, ctx):
+    @commands.command(aliases=["vrank"])
+    async def valrank(self, ctx):
         """Display user's Valorant rank."""
         user_id = ctx.author.id
         

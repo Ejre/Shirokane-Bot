@@ -132,7 +132,9 @@ async def load_extensions():
         "commands.ai",
         "commands.waifu",
         "commands.fun",
-        "commands.valorant"
+        "commands.valorant",
+        "commands.anime",
+        "commands.leveling"
     ]
     
     for extension in extensions:
