@@ -255,20 +255,28 @@ class Waifu(commands.Cog):
                         generations = status_data.get("generations", [])
                         if generations:
                             image_url = generations[0].get("img")
-                        break
-
-                    # Update loading embed with wait time every 15s
-                    if elapsed % 15 == 0:
-                        queue_pos = status_data.get("queue_position", "?")
-                        wait_time = status_data.get("wait_time", "?")
+                        # Update embed one last time to show download in progress
                         loading_embed.description = (
                             f"Sedang membuat waifu dengan deskripsi:\n`{description}`\n\n"
-                            f"⏳ Posisi antrian: **{queue_pos}** | Estimasi: **{wait_time}s**"
+                            f"✅ Selesai! Sedang mendownload gambar..."
                         )
                         try:
                             await loading_msg.edit(embed=loading_embed)
                         except Exception:
-                            pass  # Interaction token expired (>15min), continue polling silently
+                            pass
+                        break
+
+                    # Update loading embed with queue info every poll cycle (every 5s)
+                    queue_pos = status_data.get("queue_position", "?")
+                    wait_time = status_data.get("wait_time", "?")
+                    loading_embed.description = (
+                        f"Sedang membuat waifu dengan deskripsi:\n`{description}`\n\n"
+                        f"⏳ Posisi antrian: **{queue_pos}** | Estimasi: **{wait_time}s**"
+                    )
+                    try:
+                        await loading_msg.edit(embed=loading_embed)
+                    except Exception:
+                        pass  # Interaction token expired (>15min), continue polling silently
 
                 if not image_url:
                     await loading_msg.delete()

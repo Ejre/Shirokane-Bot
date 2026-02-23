@@ -46,12 +46,49 @@ async def on_message(message):
     if bot.user in message.mentions:
         user_message = message.content.replace(f"<@{bot.user.id}>", "").strip()
         if user_message:
-            response = get_chat_response(user_message)
-            await message.channel.send(response)
+            ai_cog = bot.get_cog("AI")
+            if ai_cog:
+                response = await ai_cog.get_ai_response(user_message)
+            else:
+                response = None
+            if response:
+                if isinstance(response, dict):
+                    if response.get("text"):
+                        await message.reply(response["text"])
+                    if response.get("image"):
+                        embed = discord.Embed(color=discord.Color.blue())
+                        embed.set_image(url=response["image"])
+                        await message.channel.send(embed=embed)
+                else:
+                    await message.reply(response)
+        return
+
+    # Handle replies to bot messages (e.g. replying to an embed the bot sent)
+    ai_cog = bot.get_cog("AI")
+    if (
+        ai_cog
+        and message.reference
+        and message.reference.resolved  # The referenced message is cached/resolved
+        and isinstance(message.reference.resolved, discord.Message)
+        and message.reference.resolved.author == bot.user
+        and message.author.id not in ai_cog.autoai_users  # Don't double-handle autoai users
+    ):
+        user_message = message.content.strip()
+        if user_message and not user_message.startswith(COMMAND_PREFIX):
+            response = await ai_cog.get_ai_response(user_message, message.author.id, use_memory=True)
+            if response:
+                if isinstance(response, dict):
+                    if response.get("text"):
+                        await message.reply(response["text"])
+                    if response.get("image"):
+                        embed = discord.Embed(color=discord.Color.blue())
+                        embed.set_image(url=response["image"])
+                        await message.channel.send(embed=embed)
+                else:
+                    await message.reply(response)
         return
 
     # Handle auto-AI mode (from AI Cog)
-    ai_cog = bot.get_cog("AI")
     if ai_cog and message.author.id in ai_cog.autoai_users:
         # Get user's message
         user_message = message.content.strip()

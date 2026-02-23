@@ -89,13 +89,37 @@ CHARACTER_MAP = {
     "rei": 31, "roku": 32, "masuki": 33, "chiyuri": 35 # RAS Alternate names
 }
 
-def get_character_cards(character_name, limit=1, card_type_filter=None):
+# Band → Member Mapping
+# Allows queries like "kartu roselia limited" to correctly target Roselia members
+BAND_MAP = {
+    "poppinparty": ["kasumi", "tae", "rimi", "saaya", "arisa"],
+    "poppin party": ["kasumi", "tae", "rimi", "saaya", "arisa"],
+    "popipa": ["kasumi", "tae", "rimi", "saaya", "arisa"],
+    "afterglow": ["ran", "moca", "himari", "tomoe", "tsugumi"],
+    "afterguro": ["ran", "moca", "himari", "tomoe", "tsugumi"],
+    "hellohappyworld": ["kokoro", "kaoru", "hagumi", "kanon", "misaki"],
+    "hello happy world": ["kokoro", "kaoru", "hagumi", "kanon", "misaki"],
+    "hhw": ["kokoro", "kaoru", "hagumi", "kanon", "misaki"],
+    "pastelpalettes": ["aya", "hina", "chisato", "maya", "eve"],
+    "pastel palettes": ["aya", "hina", "chisato", "maya", "eve"],
+    "pasupare": ["aya", "hina", "chisato", "maya", "eve"],
+    "roselia": ["yukina", "sayo", "lisa", "ako", "rinko"],
+    "morfonica": ["mashiro", "touko", "nanami", "tsukushi", "rui"],
+    "morphonica": ["mashiro", "touko", "nanami", "tsukushi", "rui"],
+    "ras": ["layer", "lock", "masking", "pareo", "chu2"],
+    "raise a suilen": ["layer", "lock", "masking", "pareo", "chu2"],
+    "mygo": ["tomori", "anon", "soyo", "taki", "raana"],
+    "ave mujica": ["mortis", "oblivionis", "timoris", "doloris", "pectus"],
+}
+
+def get_character_cards(character_name, limit=1, card_type_filter=None, rarity_filter=None):
     """
-    Fetches cards for a specific character with optional type filtering.
+    Fetches cards for a specific character with optional type and rarity filtering.
     Args:
         character_name (str): Name of the character (e.g., "yukina", "rinko").
         limit (int): Number of cards to return.
         card_type_filter (str): Specific card type to filter (e.g., "dream_fes", "kirafes", "limited").
+        rarity_filter (int): Minimum rarity to filter (e.g., 4 for 4-star, 5 for 5-star).
     Returns list of dicts with card info and image.
     """
     char_id = CHARACTER_MAP.get(character_name.lower())
@@ -114,7 +138,12 @@ def get_character_cards(character_name, limit=1, card_type_filter=None):
             if card_data.get("characterId") == char_id:
                 # Check for limited/specific type if requested
                 card_type = card_data.get("type", "permanent")
-                
+                rarity = card_data.get("rarity", 3)
+
+                # Rarity filter
+                if rarity_filter is not None and rarity < rarity_filter:
+                    continue
+
                 # Filter Logic
                 if card_type_filter:
                     filter_lower = card_type_filter.lower()
@@ -139,7 +168,6 @@ def get_character_cards(character_name, limit=1, card_type_filter=None):
                      prefix = card_data.get("prefix", ["?"])[0] # Fallback to JP
 
                 resource_set = card_data.get("resourceSetName")
-                rarity = card_data.get("rarity", 3)
                 
                 # Image URL selection
                 if rarity >= 3:
@@ -168,3 +196,29 @@ def get_character_cards(character_name, limit=1, card_type_filter=None):
     except Exception as e:
         print(f"[Bestdori Error] get_character_cards: {e}")
         return []
+
+
+def get_band_cards(band_name, limit=1, card_type_filter=None, rarity_filter=None):
+    """
+    Fetches cards across all members of a band.
+    Returns the best matching card(s) sorted by release date.
+    """
+    members = BAND_MAP.get(band_name.lower(), [])
+    if not members:
+        return []
+
+    all_cards = []
+    for member in members:
+        cards = get_character_cards(
+            member,
+            limit=5,  # Get more per member so we can cross-compare
+            card_type_filter=card_type_filter,
+            rarity_filter=rarity_filter
+        )
+        for card in cards:
+            card["character"] = member  # Tag which member it belongs to
+        all_cards.extend(cards)
+
+    # Sort all collected cards by release date (newest first)
+    all_cards.sort(key=lambda x: int(x["release_date"] or 0), reverse=True)
+    return all_cards[:limit]

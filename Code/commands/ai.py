@@ -10,7 +10,8 @@ import discord
 from config import AI_API_KEY, AI_API_URL
 
 
-from utils.bestdori import get_jp_event, get_character_cards, CHARACTER_MAP
+import re
+from utils.bestdori import get_jp_event, get_character_cards, get_band_cards, CHARACTER_MAP, BAND_MAP
 
 class AI(commands.Cog):
     """AI chat and conversation functionality"""
@@ -55,15 +56,17 @@ class AI(commands.Cog):
         # 2. Check for Character Cards (Generic)
         elif "kartu" in query_lower or "card" in query_lower:
             target_char = None
+            target_band = None
             target_type = None
+            target_rarity = None
             
-            # Detect Character
-            for char_name in CHARACTER_MAP.keys():
-                if char_name in query_lower:
-                    target_char = char_name
-                    break
-            
-            # Detect Type
+            # --- Detect Rarity ---
+            # Match patterns like '4 star', '5 bintang', '4-star', etc.
+            rarity_match = re.search(r'(\d)\s*(?:star|bintang|-star)', query_lower)
+            if rarity_match:
+                target_rarity = int(rarity_match.group(1))
+
+            # --- Detect Card Type ---
             if "dream" in query_lower and "fest" in query_lower:
                 target_type = "dream_fes"
             elif "kira" in query_lower and "fest" in query_lower:
@@ -72,21 +75,55 @@ class AI(commands.Cog):
                 target_type = "limited"
             elif "birthday" in query_lower:
                 target_type = "birthday"
-            
-            if target_char:
-                cards = get_character_cards(target_char, limit=1, card_type_filter=target_type)
+
+            # --- Detect Band Name (check BEFORE individual characters) ---
+            for band_name in BAND_MAP.keys():
+                # Use word-boundary regex to avoid partial matches
+                if re.search(r'\b' + re.escape(band_name) + r'\b', query_lower):
+                    target_band = band_name
+                    break
+
+            # --- Detect Individual Character (word-boundary safe) ---
+            if not target_band:
+                for char_name in CHARACTER_MAP.keys():
+                    # \b ensures 'eve' won't match inside 'event'
+                    if re.search(r'\b' + re.escape(char_name) + r'\b', query_lower):
+                        target_char = char_name
+                        break
+
+            # --- Fetch Cards ---
+            if target_band:
+                cards = get_band_cards(target_band, limit=1, card_type_filter=target_type, rarity_filter=target_rarity)
+                if cards:
+                    card = cards[0]
+                    card_type_display = card['type'].replace("_", " ").title()
+                    char_display = card.get('character', '').title()
+                    bestdori_context += (
+                        f" [INFO UTAMA: Kartu dari band {target_band.title()} yang ditemukan adalah "
+                        f"'{card['title']}' milik karakter {char_display}. "
+                        f"Tipe: {card_type_display}. Rarity: {card['rarity']} Bintang. Dirilis pada server JP. "
+                        f"Jelaskan kartu ini kepada user dengan antusias.]"
+                    )
+                    image_url = card.get("image")
+                else:
+                    bestdori_context += (
+                        f" [INFO UTAMA: Tidak ditemukan kartu {target_type or 'apapun'} untuk band {target_band.title()}. "
+                        f"Beritahu user bahwa kartu tersebut belum ada atau tidak ditemukan.]"
+                    )
+            elif target_char:
+                cards = get_character_cards(target_char, limit=1, card_type_filter=target_type, rarity_filter=target_rarity)
                 if cards:
                     card = cards[0]
                     card_type_display = card['type'].replace("_", " ").title()
                     bestdori_context += (
-                        f" [INFO UTAMA: Kartu {target_char.title()} ({card_type_display}) yang ditemukan adalah '{card['title']}'. "
+                        f" [INFO UTAMA: Kartu karakter {target_char.title()} ({card_type_display}) yang ditemukan adalah '{card['title']}'. "
                         f"Rarity: {card['rarity']} Bintang. Dirilis pada server JP. "
                         f"Jelaskan kartu ini kepada user dengan antusias.]"
                     )
                     image_url = card.get("image")
                 else:
-                     bestdori_context += (
-                        f" [INFO UTAMA: Tidak ditemukan kartu {target_type} untuk karakter {target_char}. "
+                    bestdori_context += (
+                        f" [INFO UTAMA: Tidak ditemukan kartu {target_type or 'apapun'} untuk karakter {target_char.title()}. "
                         f"Beritahu user bahwa kartu tersebut belum ada atau tidak ditemukan.]"
                     )
 
