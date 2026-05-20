@@ -92,12 +92,23 @@ class Music(commands.Cog):
         if ctx.interaction:
             await ctx.interaction.response.defer()
 
-        if ctx.author.voice:
-            channel = ctx.author.voice.channel
-            await channel.connect()
-            await ctx.send("✅ Bot has joined the voice channel!")
-        else:
+        if not ctx.author.voice:
             await ctx.send("🚫 You need to be in a voice channel first!")
+            return
+
+        channel = ctx.author.voice.channel
+        voice_client = ctx.guild.voice_client
+
+        if voice_client:
+            if voice_client.channel == channel:
+                await ctx.send("ℹ️ Rinko udah ada di voice channel ini!")
+                return
+            # Already connected to a different channel — move
+            await voice_client.move_to(channel)
+            await ctx.send(f"🔀 Rinko pindah ke **{channel.name}**!")
+        else:
+            await channel.connect(self_deaf=True)
+            await ctx.send(f"✅ Rinko sudah masuk ke **{channel.name}**!")
     
     @commands.hybrid_command(aliases=["p"])
     async def play(self, ctx, *, query: str):
@@ -119,7 +130,7 @@ class Music(commands.Cog):
         if not voice_client:
             if ctx.author.voice:
                 channel = ctx.author.voice.channel
-                voice_client = await channel.connect()
+                voice_client = await channel.connect(self_deaf=True)
             else:
                 await ctx.send("🚫 You need to be in a voice channel first!")
                 return
@@ -286,27 +297,32 @@ class Music(commands.Cog):
     @commands.hybrid_command(aliases=["q", "queue_list"])
     async def queue(self, ctx):
         """Show the current song queue."""
-        if not self.music_queue:
+        if ctx.interaction:
+            await ctx.interaction.response.defer()
+
+        guild_id = ctx.guild.id
+        queue_items = list(self.queues.get(guild_id, []))
+        
+        if not queue_items:
             await ctx.send("📭 Queue kosong.")
             return
 
-        embed = discord.Embed(title="🎶 Music Queue", color=discord.Color.blue())
-        desc = ""
-        for i, (title, url) in enumerate(self.music_queue):
-            desc += f"{i+1}. [{title}]({url})\n"
-            if len(desc) > 3800:
-                desc += "... (dan lainnya)"
-                break
-        
-        embed.description = desc
-        await ctx.send(embed=embed)
+        view = QueuePaginationView(ctx, queue_items)
+        embed = view._get_page_content()
+        view._update_buttons()
+        await ctx.send(embed=embed, view=view)
 
     @commands.hybrid_command(aliases=["l", "disconnect"])
     async def leave(self, ctx):
         """Disconnect the bot from the voice channel."""
+        if ctx.interaction:
+            await ctx.interaction.response.defer()
+
         if ctx.voice_client:
             # Clear queue
-            self.music_queue = []
+            guild_id = ctx.guild.id
+            if guild_id in self.queues:
+                self.queues[guild_id].clear()
             await ctx.voice_client.disconnect()
             await ctx.send("👋 Haaik, Rinko pamit dulu ya!")
         else:

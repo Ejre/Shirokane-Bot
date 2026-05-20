@@ -30,6 +30,7 @@ import discord
 intents = discord.Intents.default()
 intents.message_content = True
 intents.messages = True
+intents.voice_states = True
 
 # Command Prefix
 COMMAND_PREFIX = "!"

@@ -9,6 +9,16 @@ Main entry point that loads all command modules.
 import discord
 import asyncio
 import re
+import sys
+
+# Reconfigure stdout and stderr to use UTF-8 on Windows
+if sys.platform.startswith("win"):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+        sys.stderr.reconfigure(encoding='utf-8')
+    except AttributeError:
+        pass
+
 from discord.ext import commands
 from logger import export_log_to_excel
 from config import BOT_TOKEN, COMMAND_PREFIX, intents, keyword_responses
